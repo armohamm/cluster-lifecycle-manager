@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	awsUtil "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -129,6 +130,7 @@ func renderTemplate(context *templateContext, file string) (string, error) {
 		"encryptForTaupage": func(kmsKeyARN string, contents string) (string, error) {
 			return encryptForTaupage(context.awsAdapter, kmsKeyARN, contents)
 		},
+		"certificateExpiry": certificateExpiry,
 	}
 
 	content, ok := context.fileData[file]
@@ -683,4 +685,13 @@ func encryptForTaupage(adapter *awsAdapter, kmsKeyARN string, contents string) (
 		return "", nil
 	}
 	return adapter.kmsEncryptForTaupage(kmsKeyARN, contents)
+}
+
+// certificateExpiry returns the notAfter timestamp of a PEM-encoded certificate in the RFC3339 format
+func certificateExpiry(certificate string) (string, error) {
+	expiry, err := certificateExpiryTime(certificate)
+	if err != nil {
+		return "", err
+	}
+	return expiry.UTC().Format(time.RFC3339), nil
 }
