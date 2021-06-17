@@ -127,10 +127,7 @@ func renderTemplate(context *templateContext, file string) (string, error) {
 		"indexedList":                   indexedList,
 		"zoneDistributedNodePoolGroups": zoneDistributedNodePoolGroups,
 		"spotIONodePools":               spotIONodePools,
-		"encryptForTaupage": func(kmsKeyARN string, contents string) (string, error) {
-			return encryptForTaupage(context.awsAdapter, kmsKeyARN, contents)
-		},
-		"certificateExpiry": certificateExpiry,
+		"certificateExpiry":             certificateExpiry,
 	}
 
 	content, ok := context.fileData[file]
@@ -676,15 +673,6 @@ func spotIONodePools(nodePools []*api.NodePool) bool {
 		}
 	}
 	return false
-}
-
-// encryptForTaupage encrypts the value of `contents` with the KMS key identified by `kmsKeyARN` with the scheme
-// compatible with Taupage (aws:kms:<encrypted>). If `contents` is empty, it'll return an empty string instead.
-func encryptForTaupage(adapter *awsAdapter, kmsKeyARN string, contents string) (string, error) {
-	if contents == "" {
-		return "", nil
-	}
-	return adapter.kmsEncryptForTaupage(kmsKeyARN, contents)
 }
 
 // certificateExpiry returns the notAfter timestamp of a PEM-encoded certificate in the RFC3339 format
